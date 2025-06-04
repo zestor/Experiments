@@ -1,13 +1,9 @@
-import argparse
 import json
 from pathlib import Path
 from typing import List
 
 import hnswlib
-from fastapi import FastAPI
-from pydantic import BaseModel
 from model2vec import StaticModel
-import uvicorn
 
 INDEX_PATH = Path("index.bin")
 DATA_PATH = Path("data.json")
@@ -57,54 +53,3 @@ class VectorDB:
         for label, dist in zip(labels[0], distances[0]):
             results.append({"text": self.texts[label], "distance": float(dist)})
         return results
-
-
-def create_app(vdb: VectorDB) -> FastAPI:
-    app = FastAPI()
-
-    class Item(BaseModel):
-        text: str
-
-    @app.post("/add")
-    def add_item(item: Item):
-        vdb.add_text(item.text)
-        return {"status": "ok"}
-
-    @app.get("/search")
-    def search(q: str, k: int = 5):
-        return vdb.search(q, k)
-
-    return app
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Vector DB CLI")
-    parser.add_argument(
-        "--delete",
-        action="store_true",
-        help="remove existing index and data before running",
-    )
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("serve", help="start REST server")
-    add = subparsers.add_parser("add", help="add text")
-    add.add_argument("text", help="text to add")
-    query = subparsers.add_parser("query", help="query text")
-    query.add_argument("text", help="text to query")
-    args = parser.parse_args()
-
-    if args.delete:
-        VectorDB.clear()
-
-    vdb = VectorDB()
-
-    if args.command == "serve":
-        app = create_app(vdb)
-        uvicorn.run(app, host="0.0.0.0", port=8000)
-    elif args.command == "add":
-        vdb.add_text(args.text)
-    elif args.command == "query":
-        print(vdb.search(args.text, k=5))
-
-
-if __name__ == "__main__":
-    main()
