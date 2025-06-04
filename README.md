@@ -16,7 +16,7 @@ small CLI entry point.
 - Optional REST API server to interact with the database.
 
 The main code lives in `core/vectordb/` with the `VectorDB` class located in
-`core/vectordb/db.py`.
+`core/vectordb/db/`.
 
 ## Installation
 
