@@ -5,8 +5,8 @@ database built with [`hnswlib`](https://github.com/nmslib/hnswlib) and
 serving it over a REST API with `FastAPI`.  Texts are embedded using a
 model loaded from `model2vec`.
 
-The project is organised using a *src layout*.  All package code lives
-in `src/vectordb` which contains the database logic, REST API and a
+The project is organised using a *core layout*.  All package code lives
+in `core/vectordb` which contains the database logic, REST API and a
 small CLI entry point.
 
 ## Features
@@ -15,8 +15,8 @@ small CLI entry point.
 - Perform nearest neighbour search over stored texts.
 - Optional REST API server to interact with the database.
 
-The main code lives in `src/vectordb/` with the `VectorDB` class located in
-`src/vectordb/db.py`.
+The main code lives in `core/vectordb/` with the `VectorDB` class located in
+`core/vectordb/db.py`.
 
 ## Installation
 
@@ -29,10 +29,10 @@ pip install -r requirements.txt
 ## Command Line Usage
 
 Run the CLI using the module entry point.  Because the package lives
-under `src`, add it to the Python path first:
+under `core`, add it to the Python path first:
 
 ```
-PYTHONPATH=src python -m vectordb [--delete] {serve,add,query} [text]
+PYTHONPATH=core python -m vectordb [--delete] {serve,add,query} [text]
 ```
 
 - `--delete` removes any existing index/data before running.
@@ -43,13 +43,13 @@ PYTHONPATH=src python -m vectordb [--delete] {serve,add,query} [text]
 Example:
 
 ```bash
-PYTHONPATH=src python -m vectordb add "Hello world"
-PYTHONPATH=src python -m vectordb query "Hello"
+PYTHONPATH=core python -m vectordb add "Hello world"
+PYTHONPATH=core python -m vectordb query "Hello"
 ```
 
 ## REST API
 
-When running `PYTHONPATH=src python -m vectordb serve` an API is exposed with two endpoints:
+When running `PYTHONPATH=core python -m vectordb serve` an API is exposed with two endpoints:
 
 - `POST /add` – body `{"text": "your text"}`
 - `GET /search?q=<query>&k=<k>` – returns top `k` results
