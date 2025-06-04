@@ -1,8 +1,8 @@
 import argparse
 import uvicorn
 
-from .db import VectorDB
-from .api import create_app
+from ..db import VectorDB
+from ..api import create_app
 
 
 def main(argv=None):

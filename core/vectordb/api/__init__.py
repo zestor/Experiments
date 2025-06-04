@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from .db import VectorDB
+from ..db import VectorDB
 
 
 def create_app(vdb: VectorDB) -> FastAPI:
