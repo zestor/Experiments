@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+vectordb.egg-info/
+core/vectordb.egg-info/

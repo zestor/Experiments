@@ -27,12 +27,18 @@ class DummyIndex:
         self.space = space
         self.dim = dim
         self.vectors = {}
+        self.init_params = {}
+        self.ef = None
 
     def init_index(self, max_elements=10000, ef_construction=200, M=16):
-        pass
+        self.init_params = {
+            "max_elements": max_elements,
+            "ef_construction": ef_construction,
+            "M": M,
+        }
 
     def set_ef(self, ef):
-        pass
+        self.ef = ef
 
     def add_items(self, vecs, ids):
         for vec, idx in zip(vecs, ids):

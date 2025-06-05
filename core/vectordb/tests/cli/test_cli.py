@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 from io import StringIO  # noqa: F401 - imported for compatibility
+import logging
 
 # Allow importing the ``vectordb`` package when running tests directly.
 ROOT = Path(__file__).resolve().parents[3]
@@ -18,7 +19,7 @@ def test_cli_add_and_query(tmp_path, capsys):
     ]
 
     main(args + ["add", "foo bar"])
-    main(args + ["query", "foo bar"])
+    main(args + ["query", "foo bar", "--k", "1"])
     captured = capsys.readouterr()
     assert "foo bar" in captured.out
 
@@ -42,3 +43,126 @@ def test_cli_serve(tmp_path, monkeypatch):
     main(args + ["serve", "--host", "127.0.0.1", "--port", "1234"])
     assert called.get("app") is not None
     assert called["host"] == "127.0.0.1" and called["port"] == 1234
+
+
+def test_cli_serve_api_key(tmp_path, monkeypatch):
+    captured = {}
+
+    def fake_create_app(vdb, api_key=None):
+        captured["api_key"] = api_key
+        return "app"
+
+    monkeypatch.setattr("vectordb.cli.create_app", fake_create_app)
+    monkeypatch.setattr("uvicorn.run", lambda app, host="0", port=0: None)
+    from vectordb.cli import main
+
+    args = [
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+    ]
+
+    main(args + ["serve", "--api-key", "secret"])
+
+    assert captured["api_key"] == "secret"
+
+
+def test_cli_custom_params(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeVectorDB:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+        def add_text(self, text):
+            captured["text"] = text
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+    from vectordb.cli import main
+
+    args = [
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+        "--model-name",
+        "custom/model",
+        "--max-elements",
+        "500",
+        "--ef-construction",
+        "100",
+        "--M",
+        "8",
+        "--ef",
+        "20",
+        "--space",
+        "ip",
+    ]
+
+    main(args + ["add", "foo"])
+
+    assert captured["max_elements"] == 500
+    assert captured["ef_construction"] == 100
+    assert captured["M"] == 8
+    assert captured["ef"] == 20
+    assert captured["space"] == "ip"
+    assert captured["model_name"] == "custom/model"
+    assert captured["text"] == "foo"
+
+
+def test_cli_log_level(tmp_path, monkeypatch):
+    levels = {}
+
+    monkeypatch.setattr(
+        "vectordb.cli.VectorDB",
+        lambda **kwargs: type("D", (), {"add_text": lambda self, text: None})(),
+    )
+
+    def fake_basic(level):
+        levels["level"] = level
+
+    monkeypatch.setattr("logging.basicConfig", fake_basic)
+
+    from vectordb.cli import main
+
+    main([
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+        "--log-level",
+        "DEBUG",
+        "add",
+        "foo",
+    ])
+
+    assert levels["level"] == logging.DEBUG
+
+
+def test_cli_query_k_option(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeVectorDB:
+        def __init__(self, **kwargs):
+            pass
+
+        def search(self, text, k=5):
+            captured["k"] = k
+            return [{"text": text}]
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+    from vectordb.cli import main
+
+    main([
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+        "query",
+        "foo",
+        "--k",
+        "3",
+    ])
+
+    assert captured["k"] == 3
