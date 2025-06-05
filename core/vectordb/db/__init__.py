@@ -11,29 +11,61 @@ MODEL_NAME = "cnmoro/Linq-Embed-Mistral-Distilled"
 
 
 class VectorDB:
-    def __init__(self, model_name: str = MODEL_NAME):
+    def __init__(
+        self,
+        model_name: str = MODEL_NAME,
+        *,
+        index_path: Path = INDEX_PATH,
+        data_path: Path = DATA_PATH,
+    ):
+        """Create a new ``VectorDB`` instance.
+
+        Parameters
+        ----------
+        model_name:
+            Name of the embedding model to load.
+        index_path:
+            Where to persist the vector index.
+        data_path:
+            Where to persist the stored texts.
+        """
+
+        self.index_path = Path(index_path)
+        self.data_path = Path(data_path)
+
         self.model = StaticModel.from_pretrained(model_name)
         self.dim = self.model.dim
         self.index = hnswlib.Index(space="cosine", dim=self.dim)
         self.texts: List[str] = []
-        if INDEX_PATH.exists() and DATA_PATH.exists():
-            self.index.load_index(str(INDEX_PATH))
-            self.texts = json.loads(DATA_PATH.read_text())
+
+        if self.index_path.exists() and self.data_path.exists():
+            self.index.load_index(str(self.index_path))
+            self.texts = json.loads(self.data_path.read_text())
         else:
             self.index.init_index(max_elements=10000, ef_construction=200, M=16)
         self.index.set_ef(50)
 
     @staticmethod
-    def clear():
-        """Delete any persisted index and text data."""
-        if INDEX_PATH.exists():
-            INDEX_PATH.unlink()
-        if DATA_PATH.exists():
-            DATA_PATH.unlink()
+    def clear(index_path: Path = INDEX_PATH, data_path: Path = DATA_PATH) -> None:
+        """Delete any persisted index and text data.
 
-    def save(self):
-        self.index.save_index(str(INDEX_PATH))
-        DATA_PATH.write_text(json.dumps(self.texts))
+        Parameters
+        ----------
+        index_path:
+            Location of the saved index file.
+        data_path:
+            Location of the saved text file.
+        """
+
+        if Path(index_path).exists():
+            Path(index_path).unlink()
+        if Path(data_path).exists():
+            Path(data_path).unlink()
+
+    def save(self) -> None:
+        """Persist the current index and texts to disk."""
+        self.index.save_index(str(self.index_path))
+        self.data_path.write_text(json.dumps(self.texts))
 
     def add_text(self, text: str):
         self.add_texts([text])
