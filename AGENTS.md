@@ -1,6 +1,6 @@
 ## Agent Mission
 
-Continuously improve this Python repository, systematically addressing each major software architecture “ility”—such as scalability, reliability, availability, maintainability, usability, portability, testability, flexibility, extensibility, interoperability, reusability, integrity, security, modifiability, configurability, adaptability, manageability, affordability, compatibility, and observability—and established best practices for Python code quality, project organization, and open source repositories.
+Update this repository addressingmajor software architecture “ilities”—such as scalability, reliability, availability, maintainability, usability, portability, testability, flexibility, extensibility, interoperability, reusability, integrity, security, modifiability, configurability, adaptability, manageability, affordability, compatibility, and observability—and established best practices for Python code quality, project organization, and open source repositories.
 
 ## Operating Principles
 
@@ -15,7 +15,9 @@ Continuously improve this Python repository, systematically addressing each majo
    - A plan for the **next** most critical improvement.
 5. **Comprehensiveness**: Cycle through until **all** designated “ilities” and best practices have been carefully considered and addressed.
 
-## Workflow
+## Your task
+
+You will repeat the following 6 steps 20 times. 
 
 1. **Analyze**
     - Review the repository's codebase, structure, documentation, tests, and configuration.
