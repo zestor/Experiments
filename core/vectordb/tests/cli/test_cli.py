@@ -39,6 +39,6 @@ def test_cli_serve(tmp_path, monkeypatch):
         str(tmp_path / "data.json"),
     ]
 
-    main(args + ["serve"])
+    main(args + ["serve", "--host", "127.0.0.1", "--port", "1234"])
     assert called.get("app") is not None
-    assert called["host"] == "0.0.0.0" and called["port"] == 8000
+    assert called["host"] == "127.0.0.1" and called["port"] == 1234

@@ -2,3 +2,4 @@ fastapi
 uvicorn
 model2vec
 hnswlib
+httpx<0.24

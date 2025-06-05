@@ -38,7 +38,9 @@ PYTHONPATH=core python -m vectordb [--delete] [--index-path INDEX] [--data-path 
 - `--delete` removes any existing index/data before running.
 - `--index-path` path to the HNSW index file (default `index.bin`).
 - `--data-path` path to the stored texts file (default `data.json`).
-- `serve` starts the REST API (default port 8000).
+- `serve` starts the REST API (use `--host` and `--port` to configure it).
+- `--host` address for the REST API when serving (default `0.0.0.0`).
+- `--port` port number for the REST API when serving (default `8000`).
 - `add` adds a single text entry.
 - `query` searches for the most similar texts to the provided query.
 
