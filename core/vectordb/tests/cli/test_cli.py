@@ -68,6 +68,32 @@ def test_cli_serve_api_key(tmp_path, monkeypatch):
     assert captured["api_key"] == "secret"
 
 
+def test_cli_serve_api_key_env(tmp_path, monkeypatch):
+    captured = {}
+
+    def fake_create_app(vdb, api_key=None):
+        captured["api_key"] = api_key
+        return "app"
+
+    from vectordb import API_KEY_ENV_VAR
+
+    monkeypatch.setenv(API_KEY_ENV_VAR, "secret")
+    monkeypatch.setattr("vectordb.cli.create_app", fake_create_app)
+    monkeypatch.setattr("uvicorn.run", lambda app, host="0", port=0: None)
+    from vectordb.cli import main
+
+    args = [
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+    ]
+
+    main(args + ["serve"])
+
+    assert captured["api_key"] == "secret"
+
+
 def test_cli_custom_params(tmp_path, monkeypatch):
     captured = {}
 
