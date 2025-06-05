@@ -1,7 +1,9 @@
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+# Add the repository's ``core`` directory to the Python path so ``vectordb``
+# can be imported when running the tests from any location.
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 from fastapi.testclient import TestClient
