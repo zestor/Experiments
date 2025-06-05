@@ -1,7 +1,8 @@
 import argparse
+from pathlib import Path
 import uvicorn
 
-from ..db import VectorDB
+from ..db import VectorDB, INDEX_PATH, DATA_PATH
 from ..api import create_app
 
 
@@ -12,6 +13,18 @@ def main(argv=None):
         action="store_true",
         help="remove existing index and data before running",
     )
+    parser.add_argument(
+        "--index-path",
+        type=Path,
+        default=INDEX_PATH,
+        help="location of the HNSW index file",
+    )
+    parser.add_argument(
+        "--data-path",
+        type=Path,
+        default=DATA_PATH,
+        help="location of the stored texts",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("serve", help="start REST server")
     add = subparsers.add_parser("add", help="add text")
@@ -21,9 +34,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.delete:
-        VectorDB.clear()
+        VectorDB.clear(index_path=args.index_path, data_path=args.data_path)
 
-    vdb = VectorDB()
+    vdb = VectorDB(index_path=args.index_path, data_path=args.data_path)
 
     if args.command == "serve":
         app = create_app(vdb)
