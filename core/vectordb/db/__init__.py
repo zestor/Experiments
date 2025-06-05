@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 from typing import List
 
@@ -9,6 +10,8 @@ INDEX_PATH = Path("index.bin")
 DATA_PATH = Path("data.json")
 MODEL_NAME = "cnmoro/Linq-Embed-Mistral-Distilled"
 
+logger = logging.getLogger(__name__)
+
 
 class VectorDB:
     def __init__(
@@ -17,7 +20,12 @@ class VectorDB:
         *,
         index_path: Path = INDEX_PATH,
         data_path: Path = DATA_PATH,
-    ):
+        max_elements: int = 10000,
+        ef_construction: int = 200,
+        M: int = 16,
+        ef: int = 50,
+        space: str = "cosine",
+    ) -> None:
         """Create a new ``VectorDB`` instance.
 
         Parameters
@@ -28,22 +36,58 @@ class VectorDB:
             Where to persist the vector index.
         data_path:
             Where to persist the stored texts.
+        max_elements:
+            Maximum number of elements to store in the index.
+        ef_construction:
+            HNSW ``ef_construction`` parameter controlling build accuracy.
+        M:
+            HNSW ``M`` parameter controlling graph connectivity.
+        ef:
+            ``ef`` parameter used during search.
+        space:
+            Distance metric used by ``hnswlib`` (e.g. ``"cosine"``, ``"l2"``).
         """
 
         self.index_path = Path(index_path)
         self.data_path = Path(data_path)
+        self.max_elements = max_elements
+        self.ef_construction = ef_construction
+        self.M = M
+        self.ef = ef
+        self.space = space
+
+        logger.debug(
+            "Initializing VectorDB with index_path=%s data_path=%s",
+            self.index_path,
+            self.data_path,
+        )
 
         self.model = StaticModel.from_pretrained(model_name)
         self.dim = self.model.dim
-        self.index = hnswlib.Index(space="cosine", dim=self.dim)
+        self.index = hnswlib.Index(space=space, dim=self.dim)
         self.texts: List[str] = []
 
         if self.index_path.exists() and self.data_path.exists():
-            self.index.load_index(str(self.index_path))
-            self.texts = json.loads(self.data_path.read_text())
+            logger.debug("Loading existing index from %s", self.index_path)
+            try:
+                self.index.load_index(str(self.index_path))
+                self.texts = json.loads(self.data_path.read_text())
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to load index: %s; recreating", exc)
+                self.index.init_index(
+                    max_elements=max_elements,
+                    ef_construction=ef_construction,
+                    M=M,
+                )
+                self.texts = []
         else:
-            self.index.init_index(max_elements=10000, ef_construction=200, M=16)
-        self.index.set_ef(50)
+            logger.debug("Creating new index at %s", self.index_path)
+            self.index.init_index(
+                max_elements=max_elements,
+                ef_construction=ef_construction,
+                M=M,
+            )
+        self.index.set_ef(ef)
 
     @staticmethod
     def clear(index_path: Path = INDEX_PATH, data_path: Path = DATA_PATH) -> None:
@@ -58,19 +102,23 @@ class VectorDB:
         """
 
         if Path(index_path).exists():
+            logger.info("Deleting index file %s", index_path)
             Path(index_path).unlink()
         if Path(data_path).exists():
+            logger.info("Deleting data file %s", data_path)
             Path(data_path).unlink()
 
     def save(self) -> None:
         """Persist the current index and texts to disk."""
+        logger.debug("Saving index to %s and data to %s", self.index_path, self.data_path)
         self.index.save_index(str(self.index_path))
         self.data_path.write_text(json.dumps(self.texts))
 
-    def add_text(self, text: str):
+    def add_text(self, text: str) -> None:
         self.add_texts([text])
 
-    def add_texts(self, texts: List[str]):
+    def add_texts(self, texts: List[str]) -> None:
+        logger.info("Adding %d texts", len(texts))
         vecs = self.model.encode(texts)
         start = len(self.texts)
         ids = list(range(start, start + len(texts)))
@@ -78,7 +126,24 @@ class VectorDB:
         self.texts.extend(texts)
         self.save()
 
-    def search(self, query: str, k: int = 5):
+    def search(self, query: str, k: int = 5) -> List[dict[str, float | str]]:
+        """Return the ``k`` nearest texts to ``query``.
+
+        Parameters
+        ----------
+        query:
+            Text to search for.
+        k:
+            Number of results to return. Must be between 1 and the number of
+            stored texts.
+        """
+
+        if k < 1:
+            raise ValueError("k must be >= 1")
+        if k > len(self.texts):
+            raise ValueError("k exceeds number of stored texts")
+
+        logger.debug("Searching for '%s' with k=%d", query, k)
         vec = self.model.encode([query])[0]
         labels, distances = self.index.knn_query([vec], k=k)
         results = []

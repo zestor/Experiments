@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vectordb"
+version = "0.1.0"
+description = "Simple in-memory vector database"
+authors = [{name="The Experiments Authors"}]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "model2vec",
+    "hnswlib",
+    "httpx<0.24",
+]
+
+[project.scripts]
+vectordb = "vectordb.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["core"]
+
+[tool.setuptools.package-data]
+vectordb = ["py.typed"]
