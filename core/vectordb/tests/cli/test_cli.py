@@ -2,7 +2,7 @@ from pathlib import Path
 import sys
 from io import StringIO
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 

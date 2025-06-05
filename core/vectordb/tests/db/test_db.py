@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 
@@ -38,3 +38,18 @@ def test_persistence_and_clear(tmp_path, monkeypatch):
     VectorDB.clear()
     assert not idx.exists()
     assert not data.exists()
+
+
+def test_explicit_save(tmp_path, monkeypatch):
+    idx = tmp_path / "index.bin"
+    data = tmp_path / "data.json"
+    monkeypatch.setattr("vectordb.db.INDEX_PATH", idx)
+    monkeypatch.setattr("vectordb.db.DATA_PATH", data)
+
+    from vectordb import VectorDB
+    vdb = VectorDB()
+    vdb.add_text("save this")
+    vdb.save()
+
+    assert idx.exists()
+    assert data.exists()
