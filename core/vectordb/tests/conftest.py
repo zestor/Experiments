@@ -4,7 +4,8 @@ import json
 import types
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+# Make sure the ``core`` directory is on the import path for the tests.
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 class DummyModel:
