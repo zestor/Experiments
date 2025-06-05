@@ -9,12 +9,10 @@ sys.path.insert(0, str(ROOT))
 from fastapi.testclient import TestClient
 
 
-def test_rest_endpoints(tmp_path, monkeypatch):
-    monkeypatch.setattr("vectordb.db.INDEX_PATH", tmp_path / "index.bin")
-    monkeypatch.setattr("vectordb.db.DATA_PATH", tmp_path / "data.json")
-
+def test_rest_endpoints(tmp_path):
     from vectordb import VectorDB, create_app
-    vdb = VectorDB()
+
+    vdb = VectorDB(index_path=tmp_path / "index.bin", data_path=tmp_path / "data.json")
     app = create_app(vdb)
     client = TestClient(app)
 

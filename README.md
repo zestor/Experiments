@@ -32,10 +32,12 @@ Run the CLI using the module entry point.  Because the package lives
 under `core`, add it to the Python path first:
 
 ```
-PYTHONPATH=core python -m vectordb [--delete] {serve,add,query} [text]
+PYTHONPATH=core python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query} [text]
 ```
 
 - `--delete` removes any existing index/data before running.
+- `--index-path` path to the HNSW index file (default `index.bin`).
+- `--data-path` path to the stored texts file (default `data.json`).
 - `serve` starts the REST API (default port 8000).
 - `add` adds a single text entry.
 - `query` searches for the most similar texts to the provided query.
