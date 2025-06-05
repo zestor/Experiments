@@ -38,13 +38,13 @@ like any other Python package.
 Run the CLI using the installed entry point:
 
 ```
-vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query} [text]
+vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query,clear} [text]
 ```
 
 You can also invoke it as a module:
 
 ```
-python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query} [text]
+python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query,clear} [text]
 ```
 
 - `--delete` removes any existing index/data before running.
@@ -66,6 +66,7 @@ python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add
 - `--port` port number for the REST API when serving (default `8000`).
 - `add` adds a single text entry.
 - `query` searches for the most similar texts to the provided query.
+- `clear` removes any stored index and texts then exits.
 
 Example:
 

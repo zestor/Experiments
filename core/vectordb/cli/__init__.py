@@ -1,3 +1,5 @@
+"""Command line interface for :mod:`vectordb`."""
+
 import argparse
 from pathlib import Path
 import logging
@@ -11,6 +13,8 @@ from ..api import create_app
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Run the ``vectordb`` command line interface."""
+
     parser = argparse.ArgumentParser(description="Vector DB CLI")
     parser.add_argument(
         "--delete",
@@ -70,11 +74,10 @@ def main(argv: list[str] | None = None) -> None:
         help="logging level (e.g. INFO, DEBUG)",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser("clear", help="delete stored index and texts and exit")
     serve = subparsers.add_parser("serve", help="start REST server")
     serve.add_argument("--host", default="0.0.0.0", help="host for REST server")
-    serve.add_argument(
-        "--port", type=int, default=8000, help="port for REST server"
-    )
+    serve.add_argument("--port", type=int, default=8000, help="port for REST server")
     serve.add_argument(
         "--api-key",
         help=(
@@ -95,6 +98,10 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=getattr(logging, args.log_level.upper()))
+
+    if args.command == "clear":
+        VectorDB.clear(index_path=args.index_path, data_path=args.data_path)
+        return
 
     if args.delete:
         VectorDB.clear(index_path=args.index_path, data_path=args.data_path)

@@ -26,10 +26,12 @@ def test_cli_add_and_query(tmp_path, capsys):
 
 def test_cli_serve(tmp_path, monkeypatch):
     called = {}
+
     def fake_run(app, host="0.0.0.0", port=8000):
         called["app"] = app
         called["host"] = host
         called["port"] = port
+
     monkeypatch.setattr("uvicorn.run", fake_run)
     from vectordb.cli import main
 
@@ -152,16 +154,18 @@ def test_cli_log_level(tmp_path, monkeypatch):
 
     from vectordb.cli import main
 
-    main([
-        "--index-path",
-        str(tmp_path / "index.bin"),
-        "--data-path",
-        str(tmp_path / "data.json"),
-        "--log-level",
-        "DEBUG",
-        "add",
-        "foo",
-    ])
+    main(
+        [
+            "--index-path",
+            str(tmp_path / "index.bin"),
+            "--data-path",
+            str(tmp_path / "data.json"),
+            "--log-level",
+            "DEBUG",
+            "add",
+            "foo",
+        ]
+    )
 
     assert levels["level"] == logging.DEBUG
 
@@ -180,15 +184,41 @@ def test_cli_query_k_option(tmp_path, monkeypatch):
     monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
     from vectordb.cli import main
 
-    main([
-        "--index-path",
-        str(tmp_path / "index.bin"),
-        "--data-path",
-        str(tmp_path / "data.json"),
-        "query",
-        "foo",
-        "--k",
-        "3",
-    ])
+    main(
+        [
+            "--index-path",
+            str(tmp_path / "index.bin"),
+            "--data-path",
+            str(tmp_path / "data.json"),
+            "query",
+            "foo",
+            "--k",
+            "3",
+        ]
+    )
 
     assert captured["k"] == 3
+
+
+def test_cli_clear_command(tmp_path, monkeypatch):
+    called = {}
+
+    def fake_clear(index_path, data_path):
+        called["index"] = index_path
+        called["data"] = data_path
+
+    monkeypatch.setattr("vectordb.cli.VectorDB.clear", staticmethod(fake_clear))
+    from vectordb.cli import main
+
+    main(
+        [
+            "--index-path",
+            str(tmp_path / "index.bin"),
+            "--data-path",
+            str(tmp_path / "data.json"),
+            "clear",
+        ]
+    )
+
+    assert called["index"] == tmp_path / "index.bin"
+    assert called["data"] == tmp_path / "data.json"
