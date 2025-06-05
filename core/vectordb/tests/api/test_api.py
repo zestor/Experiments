@@ -53,3 +53,14 @@ def test_api_key_required(tmp_path):
 
     resp = client.post("/add", json={"text": "foo"}, headers={"X-API-Key": "secret"})
     assert resp.status_code == 200
+
+
+def test_api_key_invalid(tmp_path):
+    from vectordb import VectorDB, create_app
+
+    vdb = VectorDB(index_path=tmp_path / "index.bin", data_path=tmp_path / "data.json")
+    app = create_app(vdb, api_key="secret")
+    client = TestClient(app)
+
+    resp = client.post("/add", json={"text": "foo"}, headers={"X-API-Key": "wrong"})
+    assert resp.status_code == 401

@@ -60,6 +60,8 @@ python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add
 - `--log-level` set the logging level for CLI operations.
 - `serve` starts the REST API (use `--host` and `--port` to configure it).
 - `--api-key` require this key in the `X-API-Key` header when serving.
+ - `VECTORDB_API_KEY` environment variable can also supply the API key (also
+   exposed as the constant `vectordb.API_KEY_ENV_VAR`).
 - `--host` address for the REST API when serving (default `0.0.0.0`).
 - `--port` port number for the REST API when serving (default `8000`).
 - `add` adds a single text entry.
@@ -84,8 +86,10 @@ Both endpoints validate input:
 - Text must be non-empty.
 - `k` must be at least 1 and not exceed the number of stored texts.
 
-If the server was started with `--api-key`, each request must include the same
-value in the `X-API-Key` header or a `401` error will be returned.
+If the server was started with an API key (via `--api-key` or the
+`VECTORDB_API_KEY` environment variable), each request must include the same
+value in the `X-API-Key` header or a `401` error will be returned. The
+environment variable name is also exported as `vectordb.API_KEY_ENV_VAR`.
 
 ## Example
 

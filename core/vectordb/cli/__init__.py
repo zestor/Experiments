@@ -1,7 +1,10 @@
 import argparse
 from pathlib import Path
 import logging
+import os
 import uvicorn
+
+from .. import API_KEY_ENV_VAR
 
 from ..db import VectorDB, INDEX_PATH, DATA_PATH, MODEL_NAME
 from ..api import create_app
@@ -74,7 +77,10 @@ def main(argv: list[str] | None = None) -> None:
     )
     serve.add_argument(
         "--api-key",
-        help="require this API key for REST requests",
+        help=(
+            "require this API key for REST requests "
+            f"(or set {API_KEY_ENV_VAR} env var)"
+        ),
     )
     add = subparsers.add_parser("add", help="add text")
     add.add_argument("text", help="text to add")
@@ -105,7 +111,8 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     if args.command == "serve":
-        app = create_app(vdb, api_key=args.api_key)
+        api_key = args.api_key or os.getenv(API_KEY_ENV_VAR)
+        app = create_app(vdb, api_key=api_key)
         uvicorn.run(app, host=args.host, port=args.port)
     elif args.command == "add":
         vdb.add_text(args.text)

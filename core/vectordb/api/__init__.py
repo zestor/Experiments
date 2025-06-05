@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
+import hmac
 from pydantic import BaseModel, constr
 
 from ..db import VectorDB
@@ -18,7 +19,7 @@ def create_app(vdb: VectorDB, api_key: str | None = None) -> FastAPI:
     app = FastAPI()
 
     def check_key(x_api_key: str | None = Header(None)) -> None:
-        if api_key and x_api_key != api_key:
+        if api_key and not (x_api_key and hmac.compare_digest(x_api_key, api_key)):
             raise HTTPException(status_code=401, detail="invalid API key")
 
     class Item(BaseModel):
