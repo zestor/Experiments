@@ -26,7 +26,11 @@ def main(argv=None):
         help="location of the stored texts",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("serve", help="start REST server")
+    serve = subparsers.add_parser("serve", help="start REST server")
+    serve.add_argument("--host", default="0.0.0.0", help="host for REST server")
+    serve.add_argument(
+        "--port", type=int, default=8000, help="port for REST server"
+    )
     add = subparsers.add_parser("add", help="add text")
     add.add_argument("text", help="text to add")
     query = subparsers.add_parser("query", help="query text")
@@ -40,7 +44,7 @@ def main(argv=None):
 
     if args.command == "serve":
         app = create_app(vdb)
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+        uvicorn.run(app, host=args.host, port=args.port)
     elif args.command == "add":
         vdb.add_text(args.text)
     elif args.command == "query":
