@@ -102,3 +102,51 @@ def test_search_invalid_k(tmp_path):
 
     with pytest.raises(ValueError):
         vdb.search("hello", k=2)
+
+
+def test_add_text_max_length(tmp_path):
+    from vectordb import VectorDB
+    import pytest
+
+    vdb = VectorDB(index_path=tmp_path / "index.bin", data_path=tmp_path / "data.json", max_text_length=5)
+
+    with pytest.raises(ValueError):
+        vdb.add_text("toolong")
+
+
+def test_max_elements_limit(tmp_path):
+    from vectordb import VectorDB
+    import pytest
+
+    vdb = VectorDB(index_path=tmp_path / "index.bin", data_path=tmp_path / "data.json", max_elements=1)
+    vdb.add_text("one")
+    with pytest.raises(ValueError):
+        vdb.add_text("two")
+
+
+def test_invalid_parameters(tmp_path):
+    from vectordb import VectorDB
+    import pytest
+
+    with pytest.raises(ValueError):
+        VectorDB(index_path=tmp_path / "i.bin", data_path=tmp_path / "d.json", max_elements=0)
+    with pytest.raises(ValueError):
+        VectorDB(index_path=tmp_path / "i.bin", data_path=tmp_path / "d.json", max_text_length=0)
+    with pytest.raises(ValueError):
+        VectorDB(index_path=tmp_path / "i.bin", data_path=tmp_path / "d.json", ef_construction=0)
+    with pytest.raises(ValueError):
+        VectorDB(index_path=tmp_path / "i.bin", data_path=tmp_path / "d.json", M=0)
+    with pytest.raises(ValueError):
+        VectorDB(index_path=tmp_path / "i.bin", data_path=tmp_path / "d.json", ef=0)
+
+
+def test_save_creates_directories(tmp_path):
+    from vectordb import VectorDB
+
+    idx = tmp_path / "sub" / "index.bin"
+    data = tmp_path / "sub" / "data.json"
+    vdb = VectorDB(index_path=idx, data_path=data)
+    vdb.add_text("foo")
+
+    assert idx.exists()
+    assert data.exists()

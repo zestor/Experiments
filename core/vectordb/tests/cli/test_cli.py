@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 from io import StringIO  # noqa: F401 - imported for compatibility
 import logging
+import pytest
 
 # Allow importing the ``vectordb`` package when running tests directly.
 ROOT = Path(__file__).resolve().parents[3]
@@ -27,10 +28,12 @@ def test_cli_add_and_query(tmp_path, capsys):
 def test_cli_serve(tmp_path, monkeypatch):
     called = {}
 
-    def fake_run(app, host="0.0.0.0", port=8000):
+    def fake_run(app, host="0.0.0.0", port=8000, log_level="info", workers=1):
         called["app"] = app
         called["host"] = host
         called["port"] = port
+        called["log_level"] = log_level
+        called["workers"] = workers
 
     monkeypatch.setattr("uvicorn.run", fake_run)
     from vectordb.cli import main
@@ -42,9 +45,24 @@ def test_cli_serve(tmp_path, monkeypatch):
         str(tmp_path / "data.json"),
     ]
 
-    main(args + ["serve", "--host", "127.0.0.1", "--port", "1234"])
+    main(
+        args
+        + [
+            "--log-level",
+            "DEBUG",
+            "serve",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "1234",
+            "--workers",
+            "2",
+        ]
+    )
     assert called.get("app") is not None
     assert called["host"] == "127.0.0.1" and called["port"] == 1234
+    assert called["log_level"] == "debug"
+    assert called["workers"] == 2
 
 
 def test_cli_serve_api_key(tmp_path, monkeypatch):
@@ -55,7 +73,10 @@ def test_cli_serve_api_key(tmp_path, monkeypatch):
         return "app"
 
     monkeypatch.setattr("vectordb.cli.create_app", fake_create_app)
-    monkeypatch.setattr("uvicorn.run", lambda app, host="0", port=0: None)
+    monkeypatch.setattr(
+        "uvicorn.run",
+        lambda app, host="0", port=0, log_level="info", workers=1: None,
+    )
     from vectordb.cli import main
 
     args = [
@@ -81,7 +102,10 @@ def test_cli_serve_api_key_env(tmp_path, monkeypatch):
 
     monkeypatch.setenv(API_KEY_ENV_VAR, "secret")
     monkeypatch.setattr("vectordb.cli.create_app", fake_create_app)
-    monkeypatch.setattr("uvicorn.run", lambda app, host="0", port=0: None)
+    monkeypatch.setattr(
+        "uvicorn.run",
+        lambda app, host="0", port=0, log_level="info", workers=1: None,
+    )
     from vectordb.cli import main
 
     args = [
@@ -222,3 +246,43 @@ def test_cli_clear_command(tmp_path, monkeypatch):
 
     assert called["index"] == tmp_path / "index.bin"
     assert called["data"] == tmp_path / "data.json"
+
+
+def test_cli_max_text_length(tmp_path, monkeypatch):
+    from vectordb.cli import main
+
+    called = {}
+
+    class FakeVectorDB:
+        def __init__(self, **kwargs):
+            called.update(kwargs)
+
+        def add_text(self, text):
+            raise ValueError("too long")
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+
+    with pytest.raises(ValueError):
+        main([
+            "--index-path",
+            str(tmp_path / "index.bin"),
+            "--data-path",
+            str(tmp_path / "data.json"),
+            "--max-text-length",
+            "5",
+            "add",
+            "toolong",
+        ])
+
+    assert called["max_text_length"] == 5
+
+
+def test_cli_version_option(capsys):
+    from vectordb.cli import main
+    from vectordb import __version__
+
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+    assert exc.value.code == 0
+    captured = capsys.readouterr()
+    assert __version__ in captured.out
