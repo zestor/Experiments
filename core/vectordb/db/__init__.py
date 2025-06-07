@@ -25,6 +25,7 @@ class VectorDB:
         M: int = 16,
         ef: int = 50,
         space: str = "cosine",
+        max_text_length: int = 1000,
     ) -> None:
         """Create a new ``VectorDB`` instance.
 
@@ -37,7 +38,8 @@ class VectorDB:
         data_path:
             Where to persist the stored texts.
         max_elements:
-            Maximum number of elements to store in the index.
+            Maximum number of elements to store in the index. Adding more
+            texts than this limit will raise ``ValueError``.
         ef_construction:
             HNSW ``ef_construction`` parameter controlling build accuracy.
         M:
@@ -46,7 +48,22 @@ class VectorDB:
             ``ef`` parameter used during search.
         space:
             Distance metric used by ``hnswlib`` (e.g. ``"cosine"``, ``"l2"``).
+        max_text_length:
+            Maximum length of text entries to store. Texts exceeding this
+            length will raise ``ValueError`` when added.
+        All numeric parameters must be greater than or equal to ``1``.
         """
+
+        if max_elements < 1:
+            raise ValueError("max_elements must be >= 1")
+        if max_text_length < 1:
+            raise ValueError("max_text_length must be >= 1")
+        if ef_construction < 1:
+            raise ValueError("ef_construction must be >= 1")
+        if M < 1:
+            raise ValueError("M must be >= 1")
+        if ef < 1:
+            raise ValueError("ef must be >= 1")
 
         self.index_path = Path(index_path)
         self.data_path = Path(data_path)
@@ -55,6 +72,7 @@ class VectorDB:
         self.M = M
         self.ef = ef
         self.space = space
+        self.max_text_length = max_text_length
 
         logger.debug(
             "Initializing VectorDB with index_path=%s data_path=%s",
@@ -111,6 +129,8 @@ class VectorDB:
     def save(self) -> None:
         """Persist the current index and texts to disk."""
         logger.debug("Saving index to %s and data to %s", self.index_path, self.data_path)
+        self.index_path.parent.mkdir(parents=True, exist_ok=True)
+        self.data_path.parent.mkdir(parents=True, exist_ok=True)
         self.index.save_index(str(self.index_path))
         self.data_path.write_text(json.dumps(self.texts))
 
@@ -119,6 +139,15 @@ class VectorDB:
 
     def add_texts(self, texts: List[str]) -> None:
         logger.info("Adding %d texts", len(texts))
+        if len(self.texts) + len(texts) > self.max_elements:
+            raise ValueError(
+                f"adding {len(texts)} texts exceeds max_elements={self.max_elements}"
+            )
+        for t in texts:
+            if len(t) > self.max_text_length:
+                raise ValueError(
+                    f"text length {len(t)} exceeds max_text_length={self.max_text_length}"
+                )
         vecs = self.model.encode(texts)
         start = len(self.texts)
         ids = list(range(start, start + len(texts)))

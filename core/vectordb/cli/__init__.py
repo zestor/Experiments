@@ -6,7 +6,7 @@ import logging
 import os
 import uvicorn
 
-from .. import API_KEY_ENV_VAR
+from .. import API_KEY_ENV_VAR, __version__
 
 from ..db import VectorDB, INDEX_PATH, DATA_PATH, MODEL_NAME
 from ..api import create_app
@@ -16,6 +16,12 @@ def main(argv: list[str] | None = None) -> None:
     """Run the ``vectordb`` command line interface."""
 
     parser = argparse.ArgumentParser(description="Vector DB CLI")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="show program's version number and exit",
+    )
     parser.add_argument(
         "--delete",
         action="store_true",
@@ -69,6 +75,12 @@ def main(argv: list[str] | None = None) -> None:
         help="distance metric for the HNSW index",
     )
     parser.add_argument(
+        "--max-text-length",
+        type=int,
+        default=1000,
+        help="maximum length of text entries",
+    )
+    parser.add_argument(
         "--log-level",
         default="WARNING",
         help="logging level (e.g. INFO, DEBUG)",
@@ -78,6 +90,12 @@ def main(argv: list[str] | None = None) -> None:
     serve = subparsers.add_parser("serve", help="start REST server")
     serve.add_argument("--host", default="0.0.0.0", help="host for REST server")
     serve.add_argument("--port", type=int, default=8000, help="port for REST server")
+    serve.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="number of worker processes for REST server",
+    )
     serve.add_argument(
         "--api-key",
         help=(
@@ -115,12 +133,19 @@ def main(argv: list[str] | None = None) -> None:
         M=args.M,
         ef=args.ef,
         space=args.space,
+        max_text_length=args.max_text_length,
     )
 
     if args.command == "serve":
         api_key = args.api_key or os.getenv(API_KEY_ENV_VAR)
         app = create_app(vdb, api_key=api_key)
-        uvicorn.run(app, host=args.host, port=args.port)
+        uvicorn.run(
+            app,
+            host=args.host,
+            port=args.port,
+            log_level=args.log_level.lower(),
+            workers=args.workers,
+        )
     elif args.command == "add":
         vdb.add_text(args.text)
     elif args.command == "query":

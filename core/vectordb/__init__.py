@@ -5,6 +5,8 @@ from .api import create_app
 
 API_KEY_ENV_VAR = "VECTORDB_API_KEY"
 
+__version__ = "0.1.0"
+
 __all__ = [
     "VectorDB",
     "create_app",
@@ -12,4 +14,5 @@ __all__ = [
     "DATA_PATH",
     "MODEL_NAME",
     "API_KEY_ENV_VAR",
+    "__version__",
 ]
