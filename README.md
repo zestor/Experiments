@@ -34,18 +34,34 @@ This repository uses `pyproject.toml` with `setuptools` so it can be installed
 like any other Python package. The automated test suite runs on Python 3.10,
 3.11, and 3.12 to ensure broad compatibility.
 
+## Docker
+
+You can build a Docker image to run the REST API in a container:
+
+```bash
+docker build -t vectordb .
+# run with default host/port
+docker run -p 8000:8000 vectordb
+# or override host/port via environment variables
+docker run -p 8080:8080 -e VECTORDB_HOST=0.0.0.0 -e VECTORDB_PORT=8080 vectordb
+```
+
+The container exposes port `8000` and starts the server using the default
+settings. Set `VECTORDB_HOST` and `VECTORDB_PORT` to change where the server
+binds, and `VECTORDB_API_KEY` to require an API key for all requests.
+
 ## Command Line Usage
 
 Run the CLI using the installed entry point:
 
 ```
-vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query,clear} [text]
+vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query,clear,stats} [text]
 ```
 
 You can also invoke it as a module:
 
 ```
-python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query,clear} [text]
+python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add,query,clear,stats} [text]
 ```
 
 - `--delete` removes any existing index/data before running.
@@ -73,23 +89,26 @@ python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add
 - `add` adds a single text entry.
 - `query` searches for the most similar texts to the provided query.
 - `clear` removes any stored index and texts then exits.
+- `stats` prints the number of stored texts.
 
 Example:
 
 ```bash
 vectordb add "Hello world"
 vectordb query "Hello"
+vectordb stats
 ```
 
 ## REST API
 
-When running `vectordb serve` an API is exposed with three endpoints:
+When running `vectordb serve` an API is exposed with four endpoints:
 
-- `GET /health` – simple health check returning `{"status": "ok"}`
-- `POST /add` – body `{"text": "your text"}`
-- `GET /search?q=<query>&k=<k>` – returns top `k` results
+ - `GET /health` – simple health check returning `{"status": "ok"}`
+ - `POST /add` – body `{"text": "your text"}`
+ - `GET /search?q=<query>&k=<k>` – returns top `k` results
+ - `GET /stats` – returns `{"count": <number>}`
 
-Both endpoints validate input:
+ The API validates input:
 
 - Text must be non-empty.
 - `k` must be at least 1 and not exceed the number of stored texts.

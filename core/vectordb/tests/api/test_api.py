@@ -121,3 +121,17 @@ def test_api_logging(tmp_path, caplog):
     logs = caplog.text
     assert "add text" in logs
     assert "search q=foo k=1" in logs
+
+
+def test_stats_endpoint(tmp_path):
+    from vectordb import VectorDB, create_app
+
+    vdb = VectorDB(index_path=tmp_path / "index.bin", data_path=tmp_path / "data.json")
+    app = create_app(vdb)
+    client = TestClient(app)
+
+    client.post("/add", json={"text": "foo"})
+    resp = client.get("/stats")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"count": 1}

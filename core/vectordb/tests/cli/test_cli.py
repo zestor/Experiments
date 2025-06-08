@@ -286,3 +286,19 @@ def test_cli_version_option(capsys):
     assert exc.value.code == 0
     captured = capsys.readouterr()
     assert __version__ in captured.out
+
+
+def test_cli_stats_command(tmp_path, capsys):
+    from vectordb.cli import main
+
+    args = [
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+    ]
+
+    main(args + ["add", "foo"])
+    main(args + ["stats"])
+    captured = capsys.readouterr()
+    assert captured.out.strip().endswith("1")
