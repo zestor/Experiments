@@ -53,4 +53,10 @@ def create_app(vdb: VectorDB, api_key: str | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail="k exceeds number of stored texts")
         return vdb.search(q, k)
 
+    @app.get("/stats", dependencies=[Depends(check_key)])
+    def stats() -> dict[str, int]:
+        """Return basic statistics about the database."""
+        logger.debug("stats request")
+        return {"count": vdb.count()}
+
     return app

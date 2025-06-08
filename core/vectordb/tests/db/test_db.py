@@ -150,3 +150,13 @@ def test_save_creates_directories(tmp_path):
 
     assert idx.exists()
     assert data.exists()
+
+
+def test_count_method(tmp_path):
+    from vectordb import VectorDB
+
+    vdb = VectorDB(index_path=tmp_path / "index.bin", data_path=tmp_path / "data.json")
+    vdb.add_text("foo")
+    vdb.add_text("bar")
+
+    assert vdb.count() == 2

@@ -113,6 +113,7 @@ def main(argv: list[str] | None = None) -> None:
         default=5,
         help="number of results to return",
     )
+    subparsers.add_parser("stats", help="show number of stored texts")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=getattr(logging, args.log_level.upper()))
@@ -150,3 +151,5 @@ def main(argv: list[str] | None = None) -> None:
         vdb.add_text(args.text)
     elif args.command == "query":
         print(vdb.search(args.text, k=args.k))
+    elif args.command == "stats":
+        print(vdb.count())

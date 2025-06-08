@@ -179,3 +179,7 @@ class VectorDB:
         for label, dist in zip(labels[0], distances[0]):
             results.append({"text": self.texts[label], "distance": float(dist)})
         return results
+
+    def count(self) -> int:
+        """Return the number of stored texts."""
+        return len(self.texts)
