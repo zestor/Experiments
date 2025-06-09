@@ -120,6 +120,57 @@ def test_cli_serve_api_key_env(tmp_path, monkeypatch):
     assert captured["api_key"] == "secret"
 
 
+def test_cli_serve_host_port_env(tmp_path, monkeypatch):
+    captured = {}
+
+    def fake_run(app, host="0", port=0, log_level="info", workers=1):
+        captured["host"] = host
+        captured["port"] = port
+
+    from vectordb import HOST_ENV_VAR, PORT_ENV_VAR
+
+    monkeypatch.setenv(HOST_ENV_VAR, "1.2.3.4")
+    monkeypatch.setenv(PORT_ENV_VAR, "1234")
+    monkeypatch.setattr("uvicorn.run", fake_run)
+    from vectordb.cli import main
+
+    args = [
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+    ]
+
+    main(args + ["serve"])
+
+    assert captured["host"] == "1.2.3.4"
+    assert captured["port"] == 1234
+
+
+def test_cli_serve_invalid_port_env(tmp_path, monkeypatch):
+    captured = {}
+
+    def fake_run(app, host="0", port=0, log_level="info", workers=1):
+        captured["port"] = port
+
+    from vectordb import PORT_ENV_VAR
+
+    monkeypatch.setenv(PORT_ENV_VAR, "notanint")
+    monkeypatch.setattr("uvicorn.run", fake_run)
+    from vectordb.cli import main
+
+    args = [
+        "--index-path",
+        str(tmp_path / "index.bin"),
+        "--data-path",
+        str(tmp_path / "data.json"),
+    ]
+
+    main(args + ["serve"])
+
+    assert captured["port"] == 8000
+
+
 def test_cli_custom_params(tmp_path, monkeypatch):
     captured = {}
 

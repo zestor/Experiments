@@ -48,7 +48,8 @@ docker run -p 8080:8080 -e VECTORDB_HOST=0.0.0.0 -e VECTORDB_PORT=8080 vectordb
 
 The container exposes port `8000` and starts the server using the default
 settings. Set `VECTORDB_HOST` and `VECTORDB_PORT` to change where the server
-binds, and `VECTORDB_API_KEY` to require an API key for all requests.
+binds (these variables are also respected by the CLI), and `VECTORDB_API_KEY`
+to require an API key for all requests.
 
 ## Command Line Usage
 
@@ -83,8 +84,8 @@ python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add
 - `--api-key` require this key in the `X-API-Key` header when serving.
  - `VECTORDB_API_KEY` environment variable can also supply the API key (also
    exposed as the constant `vectordb.API_KEY_ENV_VAR`).
-- `--host` address for the REST API when serving (default `0.0.0.0`).
-- `--port` port number for the REST API when serving (default `8000`).
+- `--host` address for the REST API when serving (default `0.0.0.0`, or set `VECTORDB_HOST`, also exported as `vectordb.HOST_ENV_VAR`).
+- `--port` port number for the REST API when serving (default `8000`, or set `VECTORDB_PORT`, also exported as `vectordb.PORT_ENV_VAR`).
 - `--workers` number of worker processes for the REST API (default `1`).
 - `add` adds a single text entry.
 - `query` searches for the most similar texts to the provided query.
