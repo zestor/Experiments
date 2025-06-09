@@ -152,6 +152,20 @@ def test_save_creates_directories(tmp_path):
     assert data.exists()
 
 
+def test_atomic_save(tmp_path):
+    from vectordb import VectorDB
+
+    idx = tmp_path / "index.bin"
+    data = tmp_path / "data.json"
+    vdb = VectorDB(index_path=idx, data_path=data)
+    vdb.add_text("foo")
+
+    files = list(tmp_path.iterdir())
+    assert idx in files
+    assert data in files
+    assert len(files) == 2
+
+
 def test_count_method(tmp_path):
     from vectordb import VectorDB
 

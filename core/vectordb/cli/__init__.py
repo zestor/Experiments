@@ -6,7 +6,15 @@ import logging
 import os
 import uvicorn
 
-from .. import API_KEY_ENV_VAR, HOST_ENV_VAR, PORT_ENV_VAR, __version__
+from .. import (
+    API_KEY_ENV_VAR,
+    HOST_ENV_VAR,
+    PORT_ENV_VAR,
+    INDEX_PATH_ENV_VAR,
+    DATA_PATH_ENV_VAR,
+    MODEL_NAME_ENV_VAR,
+    __version__,
+)
 
 from ..db import VectorDB, INDEX_PATH, DATA_PATH, MODEL_NAME
 from ..api import create_app
@@ -27,22 +35,25 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="remove existing index and data before running",
     )
+    index_default = Path(os.getenv(INDEX_PATH_ENV_VAR, INDEX_PATH))
+    data_default = Path(os.getenv(DATA_PATH_ENV_VAR, DATA_PATH))
     parser.add_argument(
         "--index-path",
         type=Path,
-        default=INDEX_PATH,
-        help="location of the HNSW index file",
+        default=index_default,
+        help=f"location of the HNSW index file (or set {INDEX_PATH_ENV_VAR})",
     )
     parser.add_argument(
         "--data-path",
         type=Path,
-        default=DATA_PATH,
-        help="location of the stored texts",
+        default=data_default,
+        help=f"location of the stored texts (or set {DATA_PATH_ENV_VAR})",
     )
+    model_default = os.getenv(MODEL_NAME_ENV_VAR, MODEL_NAME)
     parser.add_argument(
         "--model-name",
-        default=MODEL_NAME,
-        help="embedding model to use",
+        default=model_default,
+        help=f"embedding model to use (or set {MODEL_NAME_ENV_VAR})",
     )
     parser.add_argument(
         "--max-elements",

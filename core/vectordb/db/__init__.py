@@ -127,12 +127,23 @@ class VectorDB:
             Path(data_path).unlink()
 
     def save(self) -> None:
-        """Persist the current index and texts to disk."""
+        """Persist the current index and texts to disk atomically."""
         logger.debug("Saving index to %s and data to %s", self.index_path, self.data_path)
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         self.data_path.parent.mkdir(parents=True, exist_ok=True)
-        self.index.save_index(str(self.index_path))
-        self.data_path.write_text(json.dumps(self.texts))
+
+        import os
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(dir=self.index_path.parent, delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+        self.index.save_index(str(tmp_path))
+        os.replace(tmp_path, self.index_path)
+
+        with tempfile.NamedTemporaryFile("w", dir=self.data_path.parent, delete=False) as tmp:
+            json.dump(self.texts, tmp)
+            tmp_path = Path(tmp.name)
+        os.replace(tmp_path, self.data_path)
 
     def add_text(self, text: str) -> None:
         self.add_texts([text])
