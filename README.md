@@ -49,7 +49,10 @@ docker run -p 8080:8080 -e VECTORDB_HOST=0.0.0.0 -e VECTORDB_PORT=8080 vectordb
 The container exposes port `8000` and starts the server using the default
 settings. Set `VECTORDB_HOST` and `VECTORDB_PORT` to change where the server
 binds (these variables are also respected by the CLI), and `VECTORDB_API_KEY`
-to require an API key for all requests.
+to require an API key for all requests. `VECTORDB_INDEX_PATH` and
+`VECTORDB_DATA_PATH` can override the default locations of the index and stored
+texts. `VECTORDB_MODEL_NAME` can set a default embedding model for both the
+server and CLI.
 
 ## Command Line Usage
 
@@ -66,10 +69,13 @@ python -m vectordb [--delete] [--index-path INDEX] [--data-path DATA] {serve,add
 ```
 
 - `--delete` removes any existing index/data before running.
-- `--index-path` path to the HNSW index file (default `index.bin`).
-- `--data-path` path to the stored texts file (default `data.json`).
+- `--index-path` path to the HNSW index file (default `index.bin`, or set
+  `VECTORDB_INDEX_PATH`, also exported as `vectordb.INDEX_PATH_ENV_VAR`).
+- `--data-path` path to the stored texts file (default `data.json`, or set
+  `VECTORDB_DATA_PATH`, also exported as `vectordb.DATA_PATH_ENV_VAR`).
   Parent directories are created automatically when saving.
-- `--model-name` name of the embedding model to load.
+- `--model-name` name of the embedding model to load (default `vectordb.db.MODEL_NAME`,
+  or set `VECTORDB_MODEL_NAME`, also exported as `vectordb.MODEL_NAME_ENV_VAR`).
 - `--max-elements` maximum items to store in the index (default `10000`).
   Adding more than this will raise an error. Value must be at least `1`.
 - `--ef-construction` `ef_construction` parameter for building the index (default `200`).

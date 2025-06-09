@@ -171,6 +171,57 @@ def test_cli_serve_invalid_port_env(tmp_path, monkeypatch):
     assert captured["port"] == 8000
 
 
+def test_cli_index_data_env(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeVectorDB:
+        def __init__(self, *, index_path, data_path, **kwargs):
+            captured["index"] = index_path
+            captured["data"] = data_path
+
+        def add_text(self, text):
+            pass
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+
+    from vectordb import INDEX_PATH_ENV_VAR, DATA_PATH_ENV_VAR
+
+    index = tmp_path / "i.bin"
+    data = tmp_path / "d.json"
+    monkeypatch.setenv(INDEX_PATH_ENV_VAR, str(index))
+    monkeypatch.setenv(DATA_PATH_ENV_VAR, str(data))
+
+    from vectordb.cli import main
+
+    main(["add", "foo"])
+
+    assert captured["index"] == index
+    assert captured["data"] == data
+
+
+def test_cli_model_name_env(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeVectorDB:
+        def __init__(self, *, model_name, **kwargs):
+            captured["model"] = model_name
+
+        def add_text(self, text):
+            pass
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+
+    from vectordb import MODEL_NAME_ENV_VAR
+
+    monkeypatch.setenv(MODEL_NAME_ENV_VAR, "another/model")
+
+    from vectordb.cli import main
+
+    main(["add", "foo"])
+
+    assert captured["model"] == "another/model"
+
+
 def test_cli_custom_params(tmp_path, monkeypatch):
     captured = {}
 
