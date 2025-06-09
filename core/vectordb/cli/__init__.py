@@ -6,7 +6,7 @@ import logging
 import os
 import uvicorn
 
-from .. import API_KEY_ENV_VAR, __version__
+from .. import API_KEY_ENV_VAR, HOST_ENV_VAR, PORT_ENV_VAR, __version__
 
 from ..db import VectorDB, INDEX_PATH, DATA_PATH, MODEL_NAME
 from ..api import create_app
@@ -88,8 +88,23 @@ def main(argv: list[str] | None = None) -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("clear", help="delete stored index and texts and exit")
     serve = subparsers.add_parser("serve", help="start REST server")
-    serve.add_argument("--host", default="0.0.0.0", help="host for REST server")
-    serve.add_argument("--port", type=int, default=8000, help="port for REST server")
+    host_default = os.getenv(HOST_ENV_VAR, "0.0.0.0")
+    port_env = os.getenv(PORT_ENV_VAR)
+    try:
+        port_default = int(port_env) if port_env is not None else 8000
+    except ValueError:
+        port_default = 8000
+    serve.add_argument(
+        "--host",
+        default=host_default,
+        help=f"host for REST server (or set {HOST_ENV_VAR})",
+    )
+    serve.add_argument(
+        "--port",
+        type=int,
+        default=port_default,
+        help=f"port for REST server (or set {PORT_ENV_VAR})",
+    )
     serve.add_argument(
         "--workers",
         type=int,
