@@ -296,6 +296,37 @@ def test_cli_log_level(tmp_path, monkeypatch):
     assert levels["level"] == logging.DEBUG
 
 
+def test_cli_log_level_env(tmp_path, monkeypatch):
+    levels = {}
+
+    monkeypatch.setattr(
+        "vectordb.cli.VectorDB",
+        lambda **kwargs: type("D", (), {"add_text": lambda self, text: None})(),
+    )
+
+    def fake_basic(level):
+        levels["level"] = level
+
+    monkeypatch.setattr("logging.basicConfig", fake_basic)
+
+    from vectordb import LOG_LEVEL_ENV_VAR
+    monkeypatch.setenv(LOG_LEVEL_ENV_VAR, "INFO")
+    from vectordb.cli import main
+
+    main(
+        [
+            "--index-path",
+            str(tmp_path / "index.bin"),
+            "--data-path",
+            str(tmp_path / "data.json"),
+            "add",
+            "foo",
+        ]
+    )
+
+    assert levels["level"] == logging.INFO
+
+
 def test_cli_query_k_option(tmp_path, monkeypatch):
     captured = {}
 

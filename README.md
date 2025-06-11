@@ -9,6 +9,8 @@ The project is organised using a *core layout*.  All package code lives
 in `core/vectordb` which contains the database logic, REST API and a
 small CLI entry point.
 
+For a history of changes, see [CHANGELOG.md](CHANGELOG.md).
+
 ## Features
 
 - Add text entries and persist them on disk.
@@ -170,6 +172,7 @@ defaults are exposed via constants in `vectordb.__init__`.
 | `VECTORDB_INDEX_PATH` | Location of the HNSW index file | `vectordb.INDEX_PATH_ENV_VAR` |
 | `VECTORDB_DATA_PATH` | Location of stored texts | `vectordb.DATA_PATH_ENV_VAR` |
 | `VECTORDB_MODEL_NAME` | Default embedding model name | `vectordb.MODEL_NAME_ENV_VAR` |
+| `VECTORDB_LOG_LEVEL` | Default log level for the CLI | `vectordb.LOG_LEVEL_ENV_VAR` |
 
 Example `.env` snippet:
 

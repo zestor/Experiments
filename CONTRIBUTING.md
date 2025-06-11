@@ -26,6 +26,8 @@ Improve maintainability by adding type hints to VectorDB
 - Follow [PEP 8](https://peps.python.org/pep-0008/) conventions.
 - Keep functions small and focused.
 - Add docstrings for public functions and classes.
+- Code is formatted with **Black** (line length 88) and linted with **Ruff**.
+  Configuration for both tools resides in `pyproject.toml`.
 
 ## Pull Requests
 
