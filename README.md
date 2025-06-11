@@ -173,6 +173,12 @@ defaults are exposed via constants in `vectordb.__init__`.
 | `VECTORDB_DATA_PATH` | Location of stored texts | `vectordb.DATA_PATH_ENV_VAR` |
 | `VECTORDB_MODEL_NAME` | Default embedding model name | `vectordb.MODEL_NAME_ENV_VAR` |
 | `VECTORDB_LOG_LEVEL` | Default log level for the CLI | `vectordb.LOG_LEVEL_ENV_VAR` |
+| `VECTORDB_MAX_ELEMENTS` | Maximum number of elements for the index | `vectordb.MAX_ELEMENTS_ENV_VAR` |
+| `VECTORDB_EF_CONSTRUCTION` | HNSW ef_construction parameter | `vectordb.EF_CONSTRUCTION_ENV_VAR` |
+| `VECTORDB_M` | HNSW M parameter | `vectordb.M_ENV_VAR` |
+| `VECTORDB_EF` | Search ef parameter | `vectordb.EF_ENV_VAR` |
+| `VECTORDB_SPACE` | Distance metric for the HNSW index | `vectordb.SPACE_ENV_VAR` |
+| `VECTORDB_MAX_TEXT_LENGTH` | Maximum length of text entries | `vectordb.MAX_TEXT_LENGTH_ENV_VAR` |
 
 Example `.env` snippet:
 
