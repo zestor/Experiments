@@ -13,6 +13,12 @@ from .. import (
     INDEX_PATH_ENV_VAR,
     DATA_PATH_ENV_VAR,
     MODEL_NAME_ENV_VAR,
+    MAX_ELEMENTS_ENV_VAR,
+    EF_CONSTRUCTION_ENV_VAR,
+    M_ENV_VAR,
+    EF_ENV_VAR,
+    SPACE_ENV_VAR,
+    MAX_TEXT_LENGTH_ENV_VAR,
     __version__,
 )
 
@@ -55,40 +61,46 @@ def main(argv: list[str] | None = None) -> None:
         default=model_default,
         help=f"embedding model to use (or set {MODEL_NAME_ENV_VAR})",
     )
+    max_elements_default = int(os.getenv(MAX_ELEMENTS_ENV_VAR, "10000"))
     parser.add_argument(
         "--max-elements",
         type=int,
-        default=10000,
+        default=max_elements_default,
         help="maximum number of elements for the index",
     )
+    ef_construction_default = int(os.getenv(EF_CONSTRUCTION_ENV_VAR, "200"))
     parser.add_argument(
         "--ef-construction",
         type=int,
-        default=200,
+        default=ef_construction_default,
         help="HNSW ef_construction parameter",
     )
+    m_default = int(os.getenv(M_ENV_VAR, "16"))
     parser.add_argument(
         "--M",
         type=int,
-        default=16,
+        default=m_default,
         help="HNSW M parameter",
     )
+    ef_default = int(os.getenv(EF_ENV_VAR, "50"))
     parser.add_argument(
         "--ef",
         type=int,
-        default=50,
+        default=ef_default,
         help="search ef parameter",
     )
+    space_default = os.getenv(SPACE_ENV_VAR, "cosine")
     parser.add_argument(
         "--space",
         choices=["cosine", "l2", "ip"],
-        default="cosine",
+        default=space_default,
         help="distance metric for the HNSW index",
     )
+    max_text_length_default = int(os.getenv(MAX_TEXT_LENGTH_ENV_VAR, "1000"))
     parser.add_argument(
         "--max-text-length",
         type=int,
-        default=1000,
+        default=max_text_length_default,
         help="maximum length of text entries",
     )
     from .. import LOG_LEVEL_ENV_VAR

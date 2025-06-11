@@ -222,6 +222,53 @@ def test_cli_model_name_env(tmp_path, monkeypatch):
     assert captured["model"] == "another/model"
 
 
+def test_cli_custom_params_env(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeVectorDB:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+        def add_text(self, text):
+            captured["text"] = text
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+
+    from vectordb import (
+        MAX_ELEMENTS_ENV_VAR,
+        EF_CONSTRUCTION_ENV_VAR,
+        M_ENV_VAR,
+        EF_ENV_VAR,
+        SPACE_ENV_VAR,
+    )
+
+    monkeypatch.setenv(MAX_ELEMENTS_ENV_VAR, "500")
+    monkeypatch.setenv(EF_CONSTRUCTION_ENV_VAR, "100")
+    monkeypatch.setenv(M_ENV_VAR, "8")
+    monkeypatch.setenv(EF_ENV_VAR, "20")
+    monkeypatch.setenv(SPACE_ENV_VAR, "ip")
+
+    from vectordb.cli import main
+
+    main(
+        [
+            "--index-path",
+            str(tmp_path / "index.bin"),
+            "--data-path",
+            str(tmp_path / "data.json"),
+            "add",
+            "foo",
+        ]
+    )
+
+    assert captured["max_elements"] == 500
+    assert captured["ef_construction"] == 100
+    assert captured["M"] == 8
+    assert captured["ef"] == 20
+    assert captured["space"] == "ip"
+    assert captured["text"] == "foo"
+
+
 def test_cli_custom_params(tmp_path, monkeypatch):
     captured = {}
 
@@ -406,6 +453,39 @@ def test_cli_max_text_length(tmp_path, monkeypatch):
             "add",
             "toolong",
         ])
+
+    assert called["max_text_length"] == 5
+
+
+def test_cli_max_text_length_env(tmp_path, monkeypatch):
+    from vectordb.cli import main
+
+    called = {}
+
+    class FakeVectorDB:
+        def __init__(self, **kwargs):
+            called.update(kwargs)
+
+        def add_text(self, text):
+            raise ValueError("too long")
+
+    monkeypatch.setattr("vectordb.cli.VectorDB", FakeVectorDB)
+
+    from vectordb import MAX_TEXT_LENGTH_ENV_VAR
+
+    monkeypatch.setenv(MAX_TEXT_LENGTH_ENV_VAR, "5")
+
+    with pytest.raises(ValueError):
+        main(
+            [
+                "--index-path",
+                str(tmp_path / "index.bin"),
+                "--data-path",
+                str(tmp_path / "data.json"),
+                "add",
+                "toolong",
+            ]
+        )
 
     assert called["max_text_length"] == 5
 
