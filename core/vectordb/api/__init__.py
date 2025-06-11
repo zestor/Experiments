@@ -22,7 +22,7 @@ def create_app(vdb: VectorDB, api_key: str | None = None) -> FastAPI:
     app = FastAPI()
 
     @app.get("/health")
-    def health() -> dict[str, str]:
+    async def health() -> dict[str, str]:
         logger.debug("health check")
         return {"status": "ok"}
 
@@ -34,7 +34,7 @@ def create_app(vdb: VectorDB, api_key: str | None = None) -> FastAPI:
         text: constr(min_length=1, max_length=vdb.max_text_length)
 
     @app.post("/add", dependencies=[Depends(check_key)])
-    def add_item(item: Item) -> dict[str, str]:
+    async def add_item(item: Item) -> dict[str, str]:
         logger.info("add text (%d chars)", len(item.text))
         try:
             vdb.add_text(item.text)
@@ -44,17 +44,19 @@ def create_app(vdb: VectorDB, api_key: str | None = None) -> FastAPI:
         return {"status": "ok"}
 
     @app.get("/search", dependencies=[Depends(check_key)])
-    def search(
+    async def search(
         q: constr(min_length=1) = Query(...),
         k: int = Query(5, ge=1),
     ) -> list[dict[str, float | str]]:
         logger.info("search q=%s k=%d", q, k)
         if k > len(vdb.texts):
-            raise HTTPException(status_code=400, detail="k exceeds number of stored texts")
+            raise HTTPException(
+                status_code=400, detail="k exceeds number of stored texts"
+            )
         return vdb.search(q, k)
 
     @app.get("/stats", dependencies=[Depends(check_key)])
-    def stats() -> dict[str, int]:
+    async def stats() -> dict[str, int]:
         """Return basic statistics about the database."""
         logger.debug("stats request")
         return {"count": vdb.count()}

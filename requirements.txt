@@ -1,5 +1,5 @@
-fastapi
-uvicorn
-model2vec
-hnswlib
-httpx<0.24
+fastapi==0.97.0
+uvicorn==0.27.0.post1
+model2vec==0.6.0
+hnswlib==0.8.0
+httpx==0.23.0
