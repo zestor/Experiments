@@ -157,9 +157,40 @@ import logging
 logging.basicConfig(level=logging.INFO)
 ```
 
+## Environment Variables
+
+The application can be configured using several `VECTORDB_*` variables. Their
+defaults are exposed via constants in `vectordb.__init__`.
+
+| Variable | Description | Constant |
+|----------|-------------|---------|
+| `VECTORDB_HOST` | Address the REST API binds to when serving | `vectordb.HOST_ENV_VAR` |
+| `VECTORDB_PORT` | Port for the REST API | `vectordb.PORT_ENV_VAR` |
+| `VECTORDB_API_KEY` | Require this key for all requests | `vectordb.API_KEY_ENV_VAR` |
+| `VECTORDB_INDEX_PATH` | Location of the HNSW index file | `vectordb.INDEX_PATH_ENV_VAR` |
+| `VECTORDB_DATA_PATH` | Location of stored texts | `vectordb.DATA_PATH_ENV_VAR` |
+| `VECTORDB_MODEL_NAME` | Default embedding model name | `vectordb.MODEL_NAME_ENV_VAR` |
+
+Example `.env` snippet:
+
+```env
+VECTORDB_HOST=0.0.0.0
+VECTORDB_PORT=8000
+VECTORDB_API_KEY=changeme
+```
+
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on running tests, code style, and crafting commit messages.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on running tests,
+code style, and crafting commit messages. After installing the dependencies,
+set up the git hooks with:
+
+```bash
+pre-commit install
+```
+
+Issue and pull request templates are available in the `.github` directory to
+ensure consistent reports and reviews.
 
 
 ## License
