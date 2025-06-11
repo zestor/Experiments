@@ -7,8 +7,8 @@ command line interface:
 running ``vectordb serve``. ``API_KEY_ENV_VAR`` defines the variable used to
 configure an optional API key. ``INDEX_PATH_ENV_VAR`` and ``DATA_PATH_ENV_VAR``
 can override the default locations of the index and stored texts. ``MODEL_NAME_ENV_VAR``
-allows overriding the default embedding model used by :class:`VectorDB` and the
-command line interface.
+and ``LOG_LEVEL_ENV_VAR`` allow overriding the default embedding model and log
+level used by :class:`VectorDB` and the command line interface.
 """
 
 from .db import DATA_PATH, INDEX_PATH, MODEL_NAME, VectorDB
@@ -20,6 +20,7 @@ PORT_ENV_VAR = "VECTORDB_PORT"
 INDEX_PATH_ENV_VAR = "VECTORDB_INDEX_PATH"
 DATA_PATH_ENV_VAR = "VECTORDB_DATA_PATH"
 MODEL_NAME_ENV_VAR = "VECTORDB_MODEL_NAME"
+LOG_LEVEL_ENV_VAR = "VECTORDB_LOG_LEVEL"
 
 __version__ = "0.1.0"
 
@@ -35,5 +36,6 @@ __all__ = [
     "INDEX_PATH_ENV_VAR",
     "DATA_PATH_ENV_VAR",
     "MODEL_NAME_ENV_VAR",
+    "LOG_LEVEL_ENV_VAR",
     "__version__",
 ]

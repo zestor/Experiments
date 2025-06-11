@@ -91,10 +91,12 @@ def main(argv: list[str] | None = None) -> None:
         default=1000,
         help="maximum length of text entries",
     )
+    from .. import LOG_LEVEL_ENV_VAR
+
     parser.add_argument(
         "--log-level",
-        default="WARNING",
-        help="logging level (e.g. INFO, DEBUG)",
+        default=os.getenv(LOG_LEVEL_ENV_VAR, "WARNING"),
+        help=f"logging level (e.g. INFO, DEBUG) (or set {LOG_LEVEL_ENV_VAR})",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("clear", help="delete stored index and texts and exit")
